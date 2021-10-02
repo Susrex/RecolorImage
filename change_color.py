@@ -76,24 +76,25 @@ def smooth_image(image_path: {str}, new_image_path: {str}, allowed_colors: {list
                     if pixel == color:
                         pixel_is_ok = True
                 if not pixel_is_ok:  # sends wrong pixels to recolor in smooth_pixel
-                    print(pixel)
-                    pixels[i, j] = smooth_pixel(pixels, i, j, allowed_colors)
+                    print(pixels[i, j][3])
+                    pixels[i, j] = smooth_pixel(pixels, i, j, allowed_colors, pixels[i, j][3])
     image.save(new_image_path)
 
 
-def smooth_pixel(pixels: {list}, i: {int}, j: {int}, allowed_colors: {list}) -> tuple:
+def smooth_pixel(pixels: {list}, i: {int}, j: {int}, allowed_colors: {list}, transparency_value: {int}) -> tuple:
     """
     Takes color of 4 surrounding pixels and determines their average color
+    :param transparency_value: transparency of the pixel being recolored
     :param pixels: image in 2D array of pixel format
     :param i: col of pixel
     :param j: file of pixel
     :param allowed_colors: array of allowed colors in tuple(r, g, b) format
     :return: The closest allowed color with transparency
     """
-    # TODO: improve this try-except block
+    # TODO: improve this try-except block to recolor all pixels
     try:  # Not all pixels have 4 adjacent pixels... (borders)
         adjacent_pixels = [pixels[i + 1, j], pixels[i - 1, j], pixels[i, j + 1], pixels[i, j - 1]]
-    except:
+    except IndexError:
         print(f"Pixel {i},{j}:{pixels[i, j]} not recolored")
         return pixels[i, j]
     average_rgb = []
@@ -106,9 +107,8 @@ def smooth_pixel(pixels: {list}, i: {int}, j: {int}, allowed_colors: {list}) -> 
                 number_of_colored_pixels += 1
         average_rgb.append(int(color_total / number_of_colored_pixels))
     best_corresponding_color = allowed_colors[choose_closest_color(tuple(average_rgb), allowed_colors)]
-    best_corresponding_color_with_transparency = add_transparency_coefficient(best_corresponding_color, pixels[i, j][3])
-    # TODO: Keep transparency level
-    return best_corresponding_color
+    best_corresponding_color_with_transparency = add_transparency_coefficient(best_corresponding_color, transparency_value)
+    return best_corresponding_color_with_transparency
 
 
 def choose_closest_color(average_rgb: {tuple}, allowed_colors: {list}) -> int:
