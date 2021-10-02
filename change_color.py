@@ -1,5 +1,6 @@
 from PIL import Image
 
+# PIL pixel format:
 # (red, green, blue, transparent = 0 / visible = 255)
 
 # COLOR CONSTANTS:
@@ -13,13 +14,20 @@ RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
 
-def change_color(image_path, new_image_path, old_color, new_color):
+def change_color(image_path: {str}, new_image_path: {str}, old_color: {tuple}, new_color: {tuple}) -> None:
+    """
+    Changes all pixel of old color to new color (tolerance applied), keeps transparency level
+    :param image_path: name of old image
+    :param new_image_path: name of new image
+    :param old_color: tuple(r, g, b)
+    :param new_color: tuple(r, g, b)
+    :return: None
+    """
     image = Image.open(image_path)
-    pixels = image.load()
+    pixels = image.load()  # transfers image into 2D array of pixels
 
     for i in range(image.size[0]):  # for every col:
         for j in range(image.size[1]):  # For every row
-            # if pixels[i, j][3] == 255:  # If pixel is not transparent
             if compare_pixels(pixels[i, j], old_color, 50):
                 new_color_with_transparency = add_transparency_coefficient(new_color, pixels[i, j][3])
                 pixels[i, j] = new_color_with_transparency
