@@ -13,6 +13,8 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
+# Donda
+
 
 def change_color(image_path: {str}, new_image_path: {str}, old_color: {tuple}, new_color: {tuple}) -> None:
     """
