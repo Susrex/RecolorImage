@@ -13,8 +13,6 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
-# Donda
-
 
 def change_color(image_path: {str}, new_image_path: {str}, old_color: {tuple}, new_color: {tuple}) -> None:
     """
@@ -58,45 +56,68 @@ def remove_transparency_coefficient(color_tuple):
     return tuple(new_color)
 
 
-def smooth_image(image_path, new_image_path, allowed_colors):
+def smooth_image(image_path: {str}, new_image_path: {str}, allowed_colors: {list}) -> None:
+    """
+    Determines which pixels have color which is not allowed and changes to them to closest allowed color
+    :param image_path: name of image to smooth
+    :param new_image_path: name of new image
+    :param allowed_colors: array of allowed colors in tuple(r, g, b) format
+    :return: None
+    """
     image = Image.open(image_path)
     pixels = image.load()
 
     for i in range(image.size[0]):  # for every col:
         for j in range(image.size[1]):  # For every row
-            if pixels[i, j][3] != 0:
+            if pixels[i, j][3] != 0:  # if not transparent
                 pixel = remove_transparency_coefficient(pixels[i, j])
                 pixel_is_ok = False
-                for color in allowed_colors:
+                for color in allowed_colors:  # checks if pixel is in allowed colors or not
                     if pixel == color:
                         pixel_is_ok = True
-                if not pixel_is_ok:
-                    smooth_pixel(pixels, i, j, allowed_colors)
+                if not pixel_is_ok:  # sends wrong pixels to recolor in smooth_pixel
+                    print(pixel)
+                    pixels[i, j] = smooth_pixel(pixels, i, j, allowed_colors)
     image.save(new_image_path)
 
 
-def smooth_pixel(pixels, i, j, allowed_colors):
-    # look to 4 surrounding pixels, try to determine which color is allowed in that area, replace it,
-    # keep transparency level
-    try:
+def smooth_pixel(pixels: {list}, i: {int}, j: {int}, allowed_colors: {list}) -> tuple:
+    """
+    Takes color of 4 surrounding pixels and determines their average color
+    :param pixels: image in 2D array of pixel format
+    :param i: col of pixel
+    :param j: file of pixel
+    :param allowed_colors: array of allowed colors in tuple(r, g, b) format
+    :return: The closest allowed color with transparency
+    """
+    # TODO: improve this try-except block
+    try:  # Not all pixels have 4 adjacent pixels... (borders)
         adjacent_pixels = [pixels[i + 1, j], pixels[i - 1, j], pixels[i, j + 1], pixels[i, j - 1]]
     except:
-        return
+        print(f"Pixel {i},{j}:{pixels[i, j]} not recolored")
+        return pixels[i, j]
     average_rgb = []
     for i in range(3):
         color_total = 0
         number_of_colored_pixels = 0
         for pixel in adjacent_pixels:
-            if pixel[3] > 0:
+            if pixel[3] > 0:  # care only about not transparent pixels
                 color_total += pixel[i]
                 number_of_colored_pixels += 1
         average_rgb.append(int(color_total / number_of_colored_pixels))
-    best_corresponding_color = allowed_colors[choose_closest_color(average_rgb, allowed_colors)]
+    best_corresponding_color = allowed_colors[choose_closest_color(tuple(average_rgb), allowed_colors)]
     best_corresponding_color_with_transparency = add_transparency_coefficient(best_corresponding_color, pixels[i, j][3])
-    pixels[i, j] = best_corresponding_color_with_transparency
+    # TODO: Keep transparency level
+    return best_corresponding_color
 
 
-def choose_closest_color(average_rgb, allowed_colors):
+def choose_closest_color(average_rgb: {tuple}, allowed_colors: {list}) -> int:
+    """
+    Chooses the best allowed color to average_rgb by calculating the lowest difference
+    :param average_rgb: average color of surrounding pixels in tuple(red, green, blue) format
+    :param allowed_colors: array of allowed colors in tuple(r, g, b) format
+    :return: index of the most similar color in allowed_colors
+    """
     similarity_score = []
     for color in allowed_colors:
         score = 0
