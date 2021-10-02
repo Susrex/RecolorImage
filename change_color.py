@@ -28,8 +28,12 @@ def change_color(image_path: {str}, new_image_path: {str}, old_color: {tuple}, n
 
     for i in range(image.size[0]):  # for every col:
         for j in range(image.size[1]):  # For every row
+            try:
+                pixel_transparency = pixels[i, j][3]
+            except:
+                pixel_transparency = 0
             if compare_pixels(pixels[i, j], old_color, 50):
-                new_color_with_transparency = add_transparency_coefficient(new_color, pixels[i, j][3])
+                new_color_with_transparency = add_transparency_coefficient(new_color, pixel_transparency)
                 pixels[i, j] = new_color_with_transparency
     image.save(new_image_path)
 
@@ -129,13 +133,13 @@ def choose_closest_color(average_rgb: {tuple}, allowed_colors: {list}) -> int:
 
 
 def start():
-    image_path = "new_img1.png"
-    new_image_path = "new_img2.png"
+    image_path = r"C:\Users\paulw\PycharmProjects\RecolorImage\camera_sample.png"
+    new_image_path = r"C:\Users\paulw\PycharmProjects\RecolorImage\pauled_img1.png"
     blue = (82, 147, 157)
     orange = (222, 143, 78)
     old_clr4 = (252, 176, 64)
     old_clr3 = (255, 179, 65)
-    old_clr = BLACK
+    old_clr = (198, 192, 178)
     new_clr = blue
     # old_color = add_transparency_coefficient(old_clr)
     # new_color = add_transparency_coefficient(new_clr)
@@ -149,4 +153,4 @@ def start2():
     smooth_image(image_path, new_image_path, allowed_colors)
 
 
-start2()
+start()
