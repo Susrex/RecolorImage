@@ -12,6 +12,8 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
+# Donda
+
 
 def change_color(image_path, new_image_path, old_color, new_color):
     image = Image.open(image_path)
