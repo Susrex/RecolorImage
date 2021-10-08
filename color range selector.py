@@ -1,15 +1,59 @@
-
 # color change but using hsl color format
 from PIL import Image
 import colorsys
 blue = (82, 147, 157)
 
 
+class ColorRange:
+
+    def __init__(self, whitelistColors, blacklistColors, tol=10):
+        self.colors = []
+        self.tolerance = tol
+        for c1 in whitelistColors:
+            self.colors.append(c1)
+        for c2 in blacklistColors:
+            self.colors.append((-1)*c2)
+
+    def addColor(self, color):
+        self.colors.append(color)
+
+    def removeColor(self, color):
+        self.colors.append((-1)*color)
+
+    def removeDuplicates(self):
+        for c in self.colors:
+            try:
+                self.colors.remove((-1)*c)
+            except ValueError:
+                pass
+
+    def check(self, color):
+        closestMark = self.colors[0]
+        for c in self.colors:
+            if color - abs(c) < color - abs(closestMark):
+                closestMark = c
+        if closestMark <= 0:  # if the closest mark is a blacklist, do not change.
+            return False
+        if color - closestMark < self.tolerance:
+            return True
+        return False
+
 
 def change_hue(
-        image_path, new_image_path, old_color_rgb, new_color_rgb, hue_tolerance):  # color should be in rgb format
+        image_path, new_image_path, whitelist_colors_rgb, blacklist_colors_rgb, new_color_rgb, hue_tolerance):
+    # color should be in rgb format
 
-    old_color_hsl = colorsys.rgb_to_hls(old_color_rgb[0]/255, old_color_rgb[1]/255, old_color_rgb[2]/255)
+    whitelist_colors_hue = []
+    for col in whitelist_colors_rgb:
+        whitelist_colors_hue.append(colorsys.rgb_to_hls(col[0] / 255, col[1] / 255, col[2] / 255)[0])
+
+    blacklist_colors_hue = []
+    for col in blacklist_colors_rgb:
+        blacklist_colors_hue.append(colorsys.rgb_to_hls(col[0] / 255, col[1] / 255, col[2] / 255)[0])
+
+    cr = ColorRange(whitelist_colors_hue, blacklist_colors_hue, hue_tolerance)
+    cr.removeDuplicates()
+
     new_color_hsl = colorsys.rgb_to_hls(new_color_rgb[0]/255, new_color_rgb[1]/255, new_color_rgb[2]/255)
     image = Image.open(image_path)
     pixels = image.load()
@@ -45,4 +89,4 @@ def change_hue(
 # img_path = r"C:\Users\paulw\PycharmProjects\RecolorImage\Header-Benefits-of-Big-Trees.png"
 img_path = r"C:\Users\paulw\PycharmProjects\RecolorImage\camera_sample.png"
 new_img_path = r"C:\Users\paulw\PycharmProjects\RecolorImage\pauled_img1.png"
-change_hue(img_path, new_img_path, (198, 192, 178), blue, 0.04)
+change_hue(img_path, new_img_path, (198, 192, 178), blue, 10)
